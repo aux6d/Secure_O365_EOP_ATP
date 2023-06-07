@@ -10,26 +10,35 @@ Import-Module -Name ORCA
 Connect-ExchangeOnline
 Get-ORCAReport
 
+# définition des variables 
+$hostedoutboundspamfilterpolicy = "Default"
+$hostedcontentfilterpolicy = "Default"
+$antiphishpolicy = "Office365 AntiPhish Default"
+$malwarefilterpolicy = "Default"
+$safeattachmentpolicy = "Built-In Protection Policy"
+$atppolicy = "Default"
+
+
 # Activation des journaux d'audit unifié
 Set-AdminAuditLogConfig -UnifiedAuditLogIngestionEnabled $true
 
 # Paramètres de stratégie de courrier indésirable sortant EOP
-Set-HostedOutboundSpamFilterPolicy -Identity Default -RecipientLimitExternalPerHour 500 -RecipientLimitInternalPerHour 1000 -RecipientLimitPerDay 1000 -ActionWhenThresholdReached BlockUser
+Set-HostedOutboundSpamFilterPolicy -Identity $hostedoutboundspamfilterpolicy -RecipientLimitExternalPerHour 500 -RecipientLimitInternalPerHour 1000 -RecipientLimitPerDay 1000 -ActionWhenThresholdReached BlockUser
 
 # Paramètres de stratégie de courrier indésirable entrant EOP
-Set-HostedContentFilterPolicy -Identity Default -BulkThreshold 6 -HighConfidenceSpamAction Quarantine -HighConfidenceSpamQuarantineTag DefaultFullAccessWithNotificationPolicy -PhishSpamAction Quarantine -PhishQuarantineTag DefaultFullAccessWithNotificationPolicy -QuarantineRetentionPeriod 30
+Set-HostedContentFilterPolicy -Identity $hostedcontentfilterpolicy -BulkThreshold 6 -HighConfidenceSpamAction Quarantine -HighConfidenceSpamQuarantineTag DefaultFullAccessWithNotificationPolicy -PhishSpamAction Quarantine -PhishQuarantineTag DefaultFullAccessWithNotificationPolicy -QuarantineRetentionPeriod 30
 
 # Paramètres d'emprunt d'identité dans les stratégies anti-hameçonnage dans Microsoft Defender pour Office 365
-Set-AntiPhishPolicy -Identity "Office365 AntiPhish Default" -PhishThresholdLevel 3 -EnableTargetedUserProtection $true -ImpersonationProtectionState Automatic -EnableOrganizationDomainsProtection $true -EnableMailboxIntelligenceProtection $true -TargetedUserProtectionAction Quarantine -TargetedUserQuarantineTag DefaultFullAccessWithNotificationPolicy -TargetedDomainProtectionAction Quarantine -TargetedDomainQuarantineTag DefaultFullAccessWithNotificationPolicy -MailboxIntelligenceProtectionAction MoveToJmf -EnableSimilarUsersSafetyTips $true -EnableSimilarDomainsSafetyTips $true -EnableUnusualCharactersSafetyTips $true
+Set-AntiPhishPolicy -Identity $antiphishpolicy -PhishThresholdLevel 3 -EnableTargetedUserProtection $true -ImpersonationProtectionState Automatic -EnableOrganizationDomainsProtection $true -EnableMailboxIntelligenceProtection $true -TargetedUserProtectionAction Quarantine -TargetedUserQuarantineTag DefaultFullAccessWithNotificationPolicy -TargetedDomainProtectionAction Quarantine -TargetedDomainQuarantineTag DefaultFullAccessWithNotificationPolicy -MailboxIntelligenceProtectionAction MoveToJmf -EnableSimilarUsersSafetyTips $true -EnableSimilarDomainsSafetyTips $true -EnableUnusualCharactersSafetyTips $true
 
 # Paramètres de stratégie anti-programme malveillant EOP
-Set-MalwareFilterPolicy -Identity Default -EnableFileFilter $true -FileTypeAction Reject -ZapEnabled $true
+Set-MalwareFilterPolicy -Identity $malwarefilterpolicy -EnableFileFilter $true -FileTypeAction Reject -ZapEnabled $true
 
 # Activer Defender pour Office 365 pour SharePoint, OneDrive et Microsoft Teams
-Set-AtpPolicyForO365 -Identity Default -EnableATPForSPOTeamsODB $true -EnableSafeDocs $true
+Set-AtpPolicyForO365 -Identity $atppolicy -EnableATPForSPOTeamsODB $true -EnableSafeDocs $true
 
 # Paramètres de stratégie pièces jointes fiables
-Set-SafeAttachmentPolicy -Identity "Built-In Protection Policy" -Enable $true -Action Block
+Set-SafeAttachmentPolicy -Identity $safeattachmentpolicy -Enable $true -Action Block
 
 # Activation bandeau utilisateurs extrernes.
 Set-ExternalInOutlook -Enable $true
